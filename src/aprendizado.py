@@ -15,17 +15,10 @@ def get_price(link):
     response = requests.get(link, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
 
-    tag = soup.find_all(tag_valor, class_=re.compile(class_valor))
-    for item in tag:
-        valor = item.text
-        if "R$" in valor:
-            break
-
-    tag = soup.find_all(tag_nome, class_=re.compile(class_nome))
-    for item in tag:
-        nome = item.text
-       
+    valor = soup.find_all(tag_valor, class_=re.compile(class_valor))[0].text
+    nome = soup.find_all(tag_nome, class_=re.compile(class_nome))[0].text
+  
     
     print(valor, nome)
 
-get_price('https://www.kabum.com.br/produto/643102/console-ps5-pro-sony-ssd-2tb-com-controle-sem-fio-dualsense-branco')
+get_price('https://www.kabum.com.br/produto/643102/console-ps5-pro-sony-ssd-2tb-com-controle-sem-fio-dualsense-branco')                                                                                                                                                                                                             
