@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests, os, re
+import streamlit as st
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
 
@@ -21,4 +22,9 @@ def get_price(link):
     
     print(valor, nome)
 
-get_price('https://www.kabum.com.br/produto/643102/console-ps5-pro-sony-ssd-2tb-com-controle-sem-fio-dualsense-branco')                                                                                                                                                                                                             
+
+
+
+
+
+st.title('Hardware Orçamento')
