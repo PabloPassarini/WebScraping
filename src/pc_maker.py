@@ -1,5 +1,6 @@
-import sqlite3
-
+import sqlite3, requests, os, re
+from bs4 import BeautifulSoup
+import streamlit as st
 class BaseDados:
     def __init__(self, db):
         """
@@ -48,7 +49,7 @@ class BaseDados:
         except Exception as e:
             return f'Erro: {e}'
 
-    def get_vcols(self, col, filter):
+    def get_vcols(self, col):
         """
         Retorna valores únicos de uma coluna específica com base em um filtro.
         :param col: Nome da coluna usada como filtro.
@@ -65,12 +66,13 @@ class BaseDados:
             index = colunas.index(col)
 
             # Executa a consulta com o filtro
-            query = f'SELECT * FROM hardware WHERE {col} = ?'
-            self.cursor.execute(query, (filter,))
+            query = f"SELECT {col} FROM hardware"
+            self.cursor.execute(query)
             registros = self.cursor.fetchall()
 
             # Retorna valores únicos da coluna especificada
-            return list(set([linha[index] for linha in registros]))
+            #return list(set([linha[index] for linha in registros]))
+            return list(registros[0])
         except Exception as e:
             return f'Erro: {e}'
 
@@ -81,9 +83,35 @@ class BaseDados:
         self.conn.close()
 
 
+class WebScraping():
+    def __init__(self):
+        self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
 
+    def get_values(self, link):
+        if 'kabum' in link:
+            loja = 'KABUM'
+            tag_preco = 'h4'
+            class_preco = 'sc-5492faee-2 ipHrwP finalPrice'
 
+            tag_nome_prod = 'h1'
+            class_nome_prod = 'sc-58b2114e-6 brTtKt'
 
-basedata = BaseDados(r'/home/pablopassarini/Projetos/WebScraping/data_base/produtos.db')
-#print(basedata.insert_hardware('Memória RAM Kingston Fury Beast, 8GB, 3200MHz, DDR4, CL16, Preto - KF432C16BB/8', 'RAM', 'https://www.kabum.com.br/produto/172365/memoria-ram-kingston-fury-beast-8gb-3200mhz-ddr4-cl16-preto-kf432c16bb-8', 'KABUM', '154.99', '18/01/2025'))
-print(basedata.get_vcols('categoria', 'RAM'))
+        try:
+            response = requests.get(link, headers=self.headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            valor = soup.find_all(tag_preco, class_=re.compile(class_preco))[0].text
+            valor = valor[3:]
+            
+            nome_prod = soup.find_all(tag_nome_prod, class_=re.compile(class_nome_prod))[0].text
+            return [valor, nome_prod]
+        
+        except Exception as e:
+            return [f'Erro: {e}']
+            
+
+bd = BaseDados(r'/home/pablopassarini/Projetos/WebScraping/data_base/produtos.db')
+categorias = bd.get_vcols('categoria')
+
+st.sidebar.title('Produtos')
+cat_sb = st.sidebar.selectbox('Categoria:', (categorias))
